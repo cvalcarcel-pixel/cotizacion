@@ -3,124 +3,100 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cotizador Inteligente - ECOBOXES</title>
-  <!-- LibrerÌa para generar PDFs -->
+  <title>Cotizador PRO - ECO BOXES</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; color: #333; margin: 0; padding: 20px; }
-    .container { max-width: 800px; margin: auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-    h1 { color: #1D9E75; text-align: center; margin-bottom: 5px; }
-    p.subtitle { text-align: center; color: #666; font-size: 14px; margin-bottom: 25px; }
+    :root { --primary: #085041; --secondary: #1D9E75; --accent: #ba7517; --bg: #f4f7f6; --surface: #ffffff; --text: #2d3748; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; line-height: 1.5; }
+    .container { max-width: 900px; margin: auto; background: var(--surface); padding: 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+    h1 { color: var(--primary); font-size: 24px; margin: 0 0 5px 0; border-bottom: 3px solid var(--secondary); display: inline-block; padding-bottom: 5px; }
+    p.subtitle { color: #718096; font-size: 14px; margin: 5px 0 30px 0; }
     
-    .section { background: #fafafa; border: 1px solid #eaeaea; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
-    .section-title { font-size: 16px; font-weight: bold; color: #444; margin-bottom: 15px; border-bottom: 2px solid #1D9E75; display: inline-block; padding-bottom: 3px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+    .section { background: #fdfdfd; border: 1px solid #e2e8f0; padding: 25px; border-radius: 12px; margin-bottom: 25px; transition: all 0.3s ease; }
+    .section-title { font-size: 15px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; color: var(--primary); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
     
-    .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 15px; }
-    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 15px; }
+    label { font-size: 13px; font-weight: 600; color: #4a5568; display: block; margin-bottom: 6px; }
+    input[type="number"] { width: 100%; padding: 12px; border: 1px solid #cbd5e0; border-radius: 8px; font-size: 15px; box-sizing: border-box; transition: border 0.2s; }
+    input[type="number"]:focus { outline: none; border-color: var(--secondary); box-shadow: 0 0 0 3px rgba(29, 158, 117, 0.15); }
     
-    label { font-size: 12px; font-weight: bold; color: #555; display: block; margin-bottom: 5px; text-transform: uppercase; }
-    input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
-    input:focus, select:focus { outline: none; border-color: #1D9E75; box-shadow: 0 0 5px rgba(29, 158, 117, 0.3); }
+    .checkbox-wrap { display: flex; align-items: center; gap: 12px; padding: 12px; background: #f7fafc; border-radius: 8px; border: 1px dashed #cbd5e0; margin-top: 15px; }
+    .checkbox-wrap input { width: 18px; height: 18px; accent-color: var(--secondary); cursor: pointer; }
+    .checkbox-wrap label { margin: 0; cursor: pointer; font-size: 14px; }
+
+    .audit-panel { background: #1a202c; color: #e2e8f0; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 13px; margin-top: 15px; line-height: 1.6; }
+    .audit-panel span.success { color: #48bb78; }
+    .audit-panel span.warning { color: #ecc94b; }
+    .audit-panel span.error { color: #fc8181; }
+
+    .result-card { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 25px; border-radius: 12px; text-align: center; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(29, 158, 117, 0.2); }
+    .price-big { font-size: 42px; font-weight: 800; letter-spacing: -1px; margin: 10px 0; }
     
-    .btn-calc { background: #1D9E75; color: white; border: none; padding: 15px; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.3s; margin-top: 10px; }
-    .btn-calc:hover { background: #147a5a; }
-    .btn-action { color: white; border: none; padding: 12px; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.3s; }
+    .btn { padding: 14px 24px; border-radius: 8px; font-weight: 600; font-size: 15px; cursor: pointer; transition: transform 0.1s, opacity 0.2s; border: none; text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary { background: var(--secondary); color: white; width: 100%; margin-top: 15px; }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-pdf { background: #E53E3E; color: white; flex: 1; }
+    .btn-wp { background: #38A169; color: white; flex: 1; }
     
     .hidden { display: none; }
-    .best-card { padding: 15px; border: 2px solid #1D9E75; border-radius: 8px; background: #fff; margin-bottom: 15px; }
-    .best-badge { background: #1D9E75; color: white; display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-bottom: 10px; font-weight: bold; }
-    .best-dim { font-size: 18px; font-weight: bold; color: #222; }
-    
-    /* Checkbox styling */
-    .checkbox-group { display: flex; align-items: center; gap: 10px; font-size: 14px; margin-top: 10px; }
-    .checkbox-group input { width: auto; transform: scale(1.2); cursor: pointer; }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <h1>ECOBOXES PACKAGING SAS</h1>
-  <p class="subtitle">Motor de CotizaciÛn y Generador de ”rdenes TÈcnicas</p>
+  <h1>ECO BOXES PACKAGING SAS</h1>
+  <p class="subtitle">Motor de Cotizaci√≥n de Empaques B2B ¬∑ An√°lisis Estructural y Financiero</p>
 
-  <!-- SECCI”N 1: DiseÒo de la Caja -->
-  <div class="section" id="sec1">
-    <div class="section-title">1. Dimensiones Internas y Resistencia</div>
-    <div class="grid-4">
-      <div><label>Largo (cm)</label><input type="number" id="largo" placeholder="Ej: 30" onchange="calcLaminas()"></div>
-      <div><label>Ancho (cm)</label><input type="number" id="ancho" placeholder="Ej: 20" onchange="calcLaminas()"></div>
-      <div><label>Alto (cm)</label><input type="number" id="alto" placeholder="Ej: 15" onchange="calcLaminas()"></div>
-      <div><label>Peso a soportar (kg)</label><input type="number" id="peso" placeholder="Ej: 5" value="5" onchange="calcLaminas()"></div>
+  <!-- SECCI√ìN 1 -->
+  <div class="section">
+    <div class="section-title">üì¶ 1. Ingenier√≠a del Empaque (Medidas Internas)</div>
+    <div class="grid">
+      <div><label>Largo (cm)</label><input type="number" id="largo" placeholder="Ej: 50" onchange="calcularTodo()"></div>
+      <div><label>Ancho (cm)</label><input type="number" id="ancho" placeholder="Ej: 30" onchange="calcularTodo()"></div>
+      <div><label>Alto (cm)</label><input type="number" id="alto" placeholder="Ej: 30" onchange="calcularTodo()"></div>
+      <div><label>Peso del producto (kg)</label><input type="number" id="peso" value="5" step="0.5" onchange="calcularTodo()"></div>
     </div>
-    <div class="checkbox-group">
-      <input type="checkbox" id="chk-apila" onchange="calcLaminas()" checked>
-      <label for="chk-apila" style="margin:0;text-transform:none;">La caja se va a apilar (Multiplica exigencia estructural)</label>
+    <div class="checkbox-wrap">
+      <input type="checkbox" id="chk-apila" onchange="calcularTodo()" checked>
+      <label for="chk-apila"><strong>El cliente va a apilar las cajas</strong> (Multiplica la exigencia estructural por 4 para evitar colapsos).</label>
     </div>
-    <div id="dev-info" style="margin-top:15px; font-size:13px; color:#666;"></div>
   </div>
 
-  <!-- SECCI”N 2: OptimizaciÛn de Material -->
-  <div class="section hidden" id="sec2">
-    <div class="section-title">2. SelecciÛn Inteligente de L·mina</div>
-    <div id="blk-best"></div>
+  <!-- SECCI√ìN 2 -->
+  <div class="section hidden" id="sec-auditoria">
+    <div class="section-title">üß† 2. Transparencia de Selecci√≥n de L√°mina</div>
+    <div id="audit-log" class="audit-panel"></div>
   </div>
 
-  <!-- SECCI”N 3: ConfiguraciÛn Comercial -->
-  <div class="section hidden" id="sec3">
-    <div class="section-title">3. Cantidad y Costos de ProducciÛn</div>
-    <div class="grid-2">
-      <div>
-        <label>Cantidad a Cotizar</label>
-        <input type="number" id="cantidad" value="500" onchange="calcCosto()">
-      </div>
-      <div>
-        <label>Margen EstratÈgico (%)</label>
-        <select id="sl-mg" onchange="calcCosto()">
-          <option value="30">30% (Competitivo)</option>
-          <option value="40" selected>40% (Est·ndar)</option>
-          <option value="50">50% (Bajo volumen)</option>
-        </select>
-      </div>
-    </div>
-    <div class="grid-2">
-      <div>
-        <label>Mano de Obra y M·quina ($/caja)</label>
-        <input type="number" id="in-mo" onchange="calcCosto()">
-        <small style="font-size:10px;color:#888;">*Auto-calculado por ·rea, puedes modificarlo.</small>
-      </div>
-    </div>
-
-    <!-- MÛdulo de ImpresiÛn -->
-    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed #ccc;">
-      <div class="checkbox-group">
-        <input type="checkbox" id="chk-imp" onchange="toggleImpresion()">
-        <label for="chk-imp" style="margin:0;">Lleva impresiÛn (ClisÈ Flexogr·fico)</label>
-      </div>
-      <div id="blk-imp" class="grid-2 hidden" style="margin-top:10px;">
-        <div><label>Costo ClisÈ (Proveedor)</label><input type="number" id="in-placa" value="80000" onchange="calcCosto()"></div>
-        <div><label>Cantidad de Tintas</label><input type="number" id="in-tintas" value="1" onchange="calcCosto()"></div>
-      </div>
+  <!-- SECCI√ìN 3 -->
+  <div class="section hidden" id="sec-finanzas">
+    <div class="section-title">üí∞ 3. Par√°metros Financieros</div>
+    <div class="grid">
+      <div><label>Cantidad Solicitada</label><input type="number" id="cantidad" value="500" onchange="calcularTodo()"></div>
+      <div><label>Margen Estrat√©gico (%)</label><input type="number" id="margen" value="35.5" step="0.1" onchange="calcularTodo()"></div>
+      <div><label>Costo M.O. y M√°quina ($)</label><input type="number" id="mano-obra" onchange="calcularTodo()"></div>
     </div>
     
-    <!-- Inputs ocultos requeridos para descuentos por volumen -->
-    <div class="hidden">
-        <input type="number" id="vd0" value="1000"><input type="number" id="vh0" value="2999"><input type="number" id="vp0" value="3">
-        <input type="number" id="vd1" value="3000"><input type="number" id="vh1" value="99999"><input type="number" id="vp1" value="5">
-        <input type="number" id="vd2" value="0"><input type="number" id="vh2" value="0"><input type="number" id="vp2" value="0">
+    <div class="checkbox-wrap" style="margin-top:20px;">
+      <input type="checkbox" id="chk-imp" onchange="toggleImpresion()">
+      <label for="chk-imp">Incluir placa de impresi√≥n Flexogr√°fica (Clis√©)</label>
+    </div>
+    <div id="blk-imp" class="grid hidden" style="margin-top:15px; padding-left:45px;">
+      <div><label>Costo Proveedor Clis√© ($)</label><input type="number" id="in-placa" value="85000" onchange="calcularTodo()"></div>
+      <div><label>N¬∞ de Tintas</label><input type="number" id="in-tintas" value="1" onchange="calcularTodo()"></div>
     </div>
   </div>
 
-  <!-- SECCI”N 4: Resultados y ExportaciÛn -->
-  <div class="section hidden" id="sec4">
-    <div class="section-title">4. Resumen y ExportaciÛn</div>
-    <div id="res"></div>
+  <!-- SECCI√ìN 4 -->
+  <div class="section hidden" id="sec-resultado">
+    <div class="section-title">üìä 4. Resultado de Cotizaci√≥n</div>
+    <div id="res-financiero"></div>
   </div>
 
 </div>
 
 <script>
-/* -----------------------------------------------------------
-   L”GICA DEL COTIZADOR Y GENERACI”N PDF
------------------------------------------------------------ */
 const MATS = [
   { g: 'micro', label: 'Microcorrugado', maxkg: 3, ect: 300, calibre: 0.0015,
     lams: [{ d: [70, 111], p: 3150 }, { d: [200, 100], p: 7750 }, { d: [200, 120], p: 9400 }, { d: [200, 140], p: 12150 }] },
@@ -135,135 +111,193 @@ const MATS = [
     lams: [{ d: [91, 91 ], p: 7500 }, { d: [106, 106], p: 10000 }, { d: [245, 111], p: 20450 }, { d: [245, 185], p: 31200 }] }
 ];
 
-let selLam = null, curL = 0, curA = 0, curH = 0, precioCotizado = 0, cantCotizada = 0;
+let selLam = null, curL=0, curA=0, curH=0, precioFinal=0, cantFinal=0, bctCalculado=0;
 const IVA = 0.19;
-const FACTOR_MERMA = 1.03; 
 
 function toggleImpresion() {
   document.getElementById('blk-imp').classList.toggle('hidden');
-  calcCosto();
+  calcularTodo();
 }
 
-function calcMcKee(ect, cal, l, a) { return Math.round(5.876 * ect * Math.sqrt(cal * (2 * (l + a) / 100))); }
-function getDesarrollo(l, a, h, isDoble) { return { w: Math.round((2 * (l + a) * 10) + (isDoble ? 40 : 35)), h_dev: Math.round((h + a) * 10) + (isDoble ? 15 : 10) }; }
-
-function buildLamList(pesoEf) {
-  const result = [];
-  MATS.forEach(mat => {
-    if (pesoEf > mat.maxkg) return;
-    const isDoble = mat.g === 'doble';
-    const d = getDesarrollo(curL, curA, curH, isDoble);
-    
-    mat.lams.forEach(item => {
-      const wm = item.d[0] * 10, hm = item.d[1] * 10;
-      const cajas = Math.floor(wm / d.w) * Math.floor(hm / d.h_dev); // CERO rotaciÛn
-      if (cajas < 1) return;
-      const desp = Math.round((1 - ((cajas * (d.w / 1000) * (d.h_dev / 1000)) / ((wm / 1000) * (hm / 1000)))) * 100);
-      const costoInterno = Math.round((item.p / (1 + IVA)) * 0.90);
-      result.push({ ...mat, w: item.d[0], h: item.d[1], costoInterno, cajas, desp, porcaja: Math.round(costoInterno / cajas), mo: Math.round(150 + ((d.w / 1000) * (d.h_dev / 1000) * 200)) });
-    });
-  });
-  return result;
-}
-
-function calcLaminas() {
-  curL = +document.getElementById('largo').value; curA = +document.getElementById('ancho').value; curH = +document.getElementById('alto').value;
+function calcularTodo() {
+  curL = parseFloat(document.getElementById('largo').value) || 0;
+  curA = parseFloat(document.getElementById('ancho').value) || 0;
+  curH = parseFloat(document.getElementById('alto').value) || 0;
+  let pesoReal = parseFloat(document.getElementById('peso').value) || 0;
+  let apila = document.getElementById('chk-apila').checked;
+  
   if (!curL || !curA || !curH) return;
-  const d = getDesarrollo(curL, curA, curH, false);
-  document.getElementById('dev-info').innerHTML = `Desarrollo de corte: <strong>${d.w} ◊ ${d.h_dev} mm</strong> <br><small style="color:#ba7517">PestaÒa y doblez incluidos. Flauta debe ir vertical.</small>`;
-  
-  const allLams = buildLamList(document.getElementById('chk-apila').checked ? (+document.getElementById('peso').value * 4) : +document.getElementById('peso').value);
-  selLam = allLams.sort((a, b) => a.porcaja !== b.porcaja ? a.porcaja - b.porcaja : a.desp - b.desp)[0] || null;
 
-  ['sec2', 'sec3', 'sec4'].forEach(id => document.getElementById(id).classList.remove('hidden'));
-  if(selLam) {
-    document.getElementById('blk-best').innerHTML = `<div class="best-card"><div class="best-badge">L·mina ”ptima</div><div class="best-dim">${selLam.w} ◊ ${selLam.h} cm (${selLam.label})</div>
-    <div style="font-size:13px; margin-top:5px; color:#666;">Costo Interno M.P.: $${selLam.costoInterno.toLocaleString('es-CO')} | Salen: <strong>${selLam.cajas} cajas</strong></div></div>`;
-    document.getElementById('in-mo').value = selLam.mo;
+  // REGLAS T√âCNICAS
+  let pesoEf = apila ? (pesoReal * 4) : pesoReal;
+  let devBaseW = Math.round((2 * (curL + curA) * 10) + 35); // 35mm pesta√±a
+  let devBaseH = Math.round((curH + curA) * 10) + 10; // 10mm tolerancia doblez
+
+  let logHtml = `> Iniciando c√°lculo geom√©trico...<br>`;
+  logHtml += `> Desarrollo Plano (corte): ${devBaseW}mm Ancho x ${devBaseH}mm Alto.<br>`;
+  logHtml += `> Peso base: ${pesoReal}kg. Factor apilamiento: ${apila ? 'Activado (x4)' : 'Inactivo (x1)'} -> Exigencia real: <span class="warning">${pesoEf}kg</span>.<br><br>`;
+
+  let opcionesValidas = [];
+
+  MATS.forEach(mat => {
+    if (pesoEf > mat.maxkg) {
+      logHtml += `<span class="error">[X] Descartado ${mat.label}:</span> Soporta m√°ximo ${mat.maxkg}kg.<br>`;
+      return;
+    }
+    
+    // Ajuste pesta√±a/doblez si es doble pared
+    let isDoble = mat.g === 'doble';
+    let devW = Math.round((2 * (curL + curA) * 10) + (isDoble ? 40 : 35));
+    let devH = Math.round((curH + curA) * 10) + (isDoble ? 15 : 10);
+    
+    let mejorLaminaMat = null;
+    mat.lams.forEach(item => {
+      let lW = item.d[0] * 10, lH = item.d[1] * 10;
+      let cajas = Math.floor(lW / devW) * Math.floor(lH / devH); // Flauta estricta
+      if (cajas < 1) return;
+      
+      let costoInterno = (item.p / (1 + IVA)) * 0.90; 
+      let costoCaja = costoInterno / cajas;
+      
+      if(!mejorLaminaMat || costoCaja < mejorLaminaMat.porcaja) {
+        mejorLaminaMat = { ...mat, w: item.d[0], h: item.d[1], cajas, costoInterno, porcaja: costoCaja, m2: (devW/1000)*(devH/1000) };
+      }
+    });
+
+    if(mejorLaminaMat) {
+      opcionesValidas.push(mejorLaminaMat);
+      logHtml += `<span class="success">[‚úì] Aprobado ${mat.label}:</span> Salen ${mejorLaminaMat.cajas} cajas en l√°mina ${mejorLaminaMat.w}x${mejorLaminaMat.h}. Costo M.P: $${Math.round(mejorLaminaMat.porcaja)}/caja.<br>`;
+    }
+  });
+
+  if (opcionesValidas.length === 0) {
+    document.getElementById('audit-log').innerHTML = logHtml + `<br><span class="error">CR√çTICO: Ning√∫n material soporta esta configuraci√≥n t√©cnica.</span>`;
+    return;
   }
-  calcCosto();
+
+  // Elegir la m√°s barata
+  opcionesValidas.sort((a,b) => a.porcaja - b.porcaja);
+  selLam = opcionesValidas[0];
+  
+  logHtml += `<br>> <span class="success">SISTEMA ELIGE: ${selLam.label} de ${selLam.w}x${selLam.h}cm por ser la opci√≥n estructuralmente segura de menor costo.</span>`;
+  document.getElementById('audit-log').innerHTML = logHtml;
+
+  // Setear MO base autom√°ticamente (150 fijo + 200/m2)
+  if(!document.getElementById('mano-obra').dataset.modificado) {
+    document.getElementById('mano-obra').value = Math.round(150 + (selLam.m2 * 200));
+  }
+
+  // CALCULAR FINANZAS
+  cantFinal = parseInt(document.getElementById('cantidad').value) || 300;
+  let mg = parseFloat(document.getElementById('margen').value) || 30;
+  let mo = parseFloat(document.getElementById('mano-obra').value) || 0;
+  
+  let costoPlaca = 0;
+  if(document.getElementById('chk-imp').checked) {
+    let placa = parseFloat(document.getElementById('in-placa').value) || 0;
+    let tintas = parseInt(document.getElementById('in-tintas').value) || 1;
+    costoPlaca = Math.round((placa * 1.10 * tintas) / cantFinal); // 10% margen placa
+  }
+
+  let costoProduccion = selLam.porcaja + mo + (selLam.g === 'doble' ? 50 : 30);
+  let precioNeto = costoProduccion / (1 - (mg / 100));
+  precioFinal = Math.round((precioNeto + costoPlaca) * (1 + IVA));
+  bctCalculado = Math.round(5.876 * selLam.ect * Math.sqrt(selLam.calibre * (2 * (curL + curA) / 100)));
+
+  // MOSTRAR INTERFAZ
+  ['sec-auditoria', 'sec-finanzas', 'sec-resultado'].forEach(id => document.getElementById(id).classList.remove('hidden'));
+
+  document.getElementById('res-financiero').innerHTML = `
+    <div class="result-card">
+      <div style="font-size:14px; text-transform:uppercase; letter-spacing:1px; opacity:0.9;">Precio Unitario al Cliente (IVA Incluido)</div>
+      <div class="price-big">$${precioFinal.toLocaleString('es-CO')}</div>
+      <div style="font-size:16px; font-weight:600;">Pedido total: $${(precioFinal * cantFinal).toLocaleString('es-CO')}</div>
+      <div style="font-size:13px; margin-top:10px; opacity:0.8;">Caja RSC en ${selLam.label} | BCT: ${bctCalculado} kg</div>
+    </div>
+    <div style="display:flex; gap:15px;">
+      <button class="btn btn-pdf" onclick="generarPDF()">üìÑ Exportar PDF Formal</button>
+      <button class="btn btn-wp" onclick="copiarWP()">üí¨ Copiar para WhatsApp</button>
+    </div>
+  `;
 }
 
-function calcCosto() {
-  if (!selLam) return;
-  cantCotizada = Math.max(300, +document.getElementById('cantidad').value || 300);
-  const mg = +document.getElementById('sl-mg').value / 100;
-  
-  let costoPlacaCaja = 0;
-  if (document.getElementById('chk-imp').checked) {
-      const placaConMargen = (+document.getElementById('in-placa').value || 0) * 1.10;
-      costoPlacaCaja = Math.round((placaConMargen * (+document.getElementById('in-tintas').value || 1)) / cantCotizada);
-  }
-
-  const costoProduccion = selLam.porcaja + (+document.getElementById('in-mo').value || 0) + (selLam.g === 'doble' ? 50 : 30);
-  let pvNeto = Math.round(costoProduccion / (1 - mg));
-  
-  // Descuentos por volumen
-  let dctoVol = 0;
-  for(let i=0; i<3; i++) {
-      if(cantCotizada >= +document.getElementById('vd'+i).value && cantCotizada <= +document.getElementById('vh'+i).value) { dctoVol = +document.getElementById('vp'+i).value; break; }
-  }
-  if(dctoVol > 0) pvNeto = Math.round(pvNeto * (1 - dctoVol / 100));
-
-  precioCotizado = Math.round((pvNeto + costoPlacaCaja) * (1 + IVA));
-
-  document.getElementById('res').innerHTML = `
-    <div style="background:#e6f9f2; border:1px solid #1D9E75; border-radius:8px; padding:20px; text-align:center; margin-bottom:15px;">
-      <div style="font-size:26px; font-weight:bold; color:#1D9E75;">$${precioCotizado.toLocaleString('es-CO')} <span style="font-size:14px;color:#555;font-weight:normal;">/caja (IVA incl.)</span></div>
-      <div style="font-size:15px; color:#333; margin-top:5px; font-weight:bold;">Total Pedido: $${(precioCotizado * cantCotizada).toLocaleString('es-CO')}</div>
-    </div>
-    <div style="background:#fff9e6; color:#856404; padding:12px; border-radius:6px; font-size:13px; margin-bottom:20px; border:1px solid #ffeeba;">
-      <strong>?? TALLER:</strong> Usar ${Math.ceil((cantCotizada / selLam.cajas) * FACTOR_MERMA).toLocaleString('es-CO')} l·minas de ${selLam.w}x${selLam.h}cm (Incluye 3% merma).
-    </div>
-    <div style="display:flex; gap:10px;">
-      <button class="btn-action" onclick="generarPDF()" style="background:#E3242B;">?? Generar PDF</button>
-      <button class="btn-action" onclick="copiarWhatsApp()" style="background:#25D366;">?? WhatsApp</button>
-    </div>`;
-}
+// Controlar si el usuario modifica la M.O. a mano para no sobreescribirla
+document.getElementById('mano-obra').addEventListener('input', function() { this.dataset.modificado = "true"; });
 
 function generarPDF() {
-  if (!selLam) return;
   const element = document.createElement('div');
   element.innerHTML = `
-    <div style="padding: 40px; font-family: Arial, sans-serif; color: #333;">
-      <div style="border-bottom: 2px solid #1D9E75; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: flex-end;">
-        <div><h1 style="color: #1D9E75; margin: 0; font-size: 28px;">ECOBOXES PACKAGING SAS</h1><p style="margin: 5px 0 0 0; font-size: 14px; color: #666;">Bogot·, Colombia</p></div>
-        <div style="text-align: right;"><h2 style="margin: 0; font-size: 20px; color: #444;">COTIZACI”N COMERCIAL</h2><p style="margin: 5px 0 0 0; font-size: 14px;">Fecha: <strong>${new Date().toLocaleDateString('es-CO')}</strong></p></div>
+    <div style="padding: 50px; font-family: 'Segoe UI', Arial, sans-serif; color: #2d3748;">
+      
+      <!-- CABECERA CORPORATIVA -->
+      <div style="display: flex; justify-content: space-between; border-bottom: 4px solid #085041; padding-bottom: 25px; margin-bottom: 35px;">
+        <div>
+          <h1 style="color: #085041; margin: 0; font-size: 32px; letter-spacing: -1px;">ECO BOXES PACKAGING</h1>
+          <p style="margin: 8px 0 0 0; font-size: 14px; color: #718096; font-weight: 600;">SOLUCIONES ESTRUCTURALES EN CART√ìN CORRUGADO</p>
+          <p style="margin: 4px 0 0 0; font-size: 13px; color: #718096;">Bogot√°, Colombia</p>
+        </div>
+        <div style="text-align: right; border-left: 2px solid #e2e8f0; padding-left: 20px;">
+          <h2 style="margin: 0; font-size: 22px; color: #ba7517; text-transform: uppercase;">Propuesta Comercial</h2>
+          <p style="margin: 5px 0 0 0; font-size: 14px;">Emisi√≥n: <strong>${new Date().toLocaleDateString('es-CO')}</strong></p>
+          <p style="margin: 2px 0 0 0; font-size: 14px;">Validez: <strong>7 d√≠as calendario</strong></p>
+        </div>
       </div>
-      <h3 style="background: #f4f4f4; padding: 10px; border-left: 4px solid #1D9E75; margin-bottom: 20px;">Especificaciones</h3>
-      <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 14px;">
-        <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 8px 0; font-weight: bold;">Tipo de Empaque:</td><td>Caja Regular (RSC)</td></tr>
-        <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 8px 0; font-weight: bold;">Dimensiones Int.:</td><td>${curL} Largo ◊ ${curA} Ancho ◊ ${curH} Alto (cm)</td></tr>
-        <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 8px 0; font-weight: bold;">Material:</td><td>${selLam.label}</td></tr>
-        <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 8px 0; font-weight: bold;">Resistencia (BCT):</td><td>${calcMcKee(selLam.ect, selLam.calibre, curL, curA).toLocaleString('es-CO')} kg aprox.</td></tr>
+
+      <!-- INGENIER√çA Y ESPECIFICACIONES -->
+      <h3 style="color: #085041; font-size: 16px; margin-bottom: 15px; border-bottom: 1px solid #cbd5e0; padding-bottom: 5px;">I. FICHA T√âCNICA DEL EMPAQUE</h3>
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 35px; font-size: 13px;">
+        <tr style="background: #f7fafc;"><td style="padding: 10px; font-weight: 700; width: 35%; border: 1px solid #e2e8f0;">Dise√±o Estructural:</td><td style="padding: 10px; border: 1px solid #e2e8f0;">Caja Regular (RSC) de 4 aletas. Flauta Vertical.</td></tr>
+        <tr><td style="padding: 10px; font-weight: 700; border: 1px solid #e2e8f0;">Dimensiones Internas (LxAxH):</td><td style="padding: 10px; border: 1px solid #e2e8f0;">${curL} x ${curA} x ${curH} cm</td></tr>
+        <tr style="background: #f7fafc;"><td style="padding: 10px; font-weight: 700; border: 1px solid #e2e8f0;">Material Designado:</td><td style="padding: 10px; border: 1px solid #e2e8f0;">${selLam.label}</td></tr>
+        <tr><td style="padding: 10px; font-weight: 700; border: 1px solid #e2e8f0;">Resistencia a la Compresi√≥n (BCT):</td><td style="padding: 10px; border: 1px solid #e2e8f0;">${bctCalculado.toLocaleString('es-CO')} kg de carga est√°tica (C√°lculo McKee).</td></tr>
       </table>
-      <table style="width: 100%; border-collapse: collapse; font-size: 16px; margin-bottom: 40px;">
-        <tr style="background: #1D9E75; color: white;">
-          <th style="padding: 10px; text-align: left;">DescripciÛn</th><th style="padding: 10px; text-align: center;">Cant.</th><th style="padding: 10px; text-align: right;">V. Unit. (IVA inc)</th><th style="padding: 10px; text-align: right;">Total (IVA inc)</th>
+
+      <!-- INVERSI√ìN -->
+      <h3 style="color: #085041; font-size: 16px; margin-bottom: 15px; border-bottom: 1px solid #cbd5e0; padding-bottom: 5px;">II. ESTRUCTURA DE INVERSI√ìN</h3>
+      <table style="width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 45px;">
+        <tr style="background: #085041; color: white;">
+          <th style="padding: 12px; text-align: left; border: 1px solid #085041;">Concepto</th>
+          <th style="padding: 12px; text-align: center; border: 1px solid #085041;">Volumen</th>
+          <th style="padding: 12px; text-align: right; border: 1px solid #085041;">V. Unitario (IVA inc)</th>
+          <th style="padding: 12px; text-align: right; border: 1px solid #085041;">Subtotal Total (IVA inc)</th>
         </tr>
         <tr>
-          <td style="padding: 15px 10px; border-bottom: 1px solid #ddd;">Cajas Corrugadas</td>
-          <td style="padding: 15px 10px; border-bottom: 1px solid #ddd; text-align: center;">${cantCotizada.toLocaleString('es-CO')}</td>
-          <td style="padding: 15px 10px; border-bottom: 1px solid #ddd; text-align: right;">$${precioCotizado.toLocaleString('es-CO')}</td>
-          <td style="padding: 15px 10px; border-bottom: 1px solid #ddd; text-align: right; font-weight: bold;">$${(precioCotizado * cantCotizada).toLocaleString('es-CO')}</td>
+          <td style="padding: 15px 12px; border: 1px solid #e2e8f0; font-weight: 500;">Fabricaci√≥n de Empaque RSC</td>
+          <td style="padding: 15px 12px; border: 1px solid #e2e8f0; text-align: center;">${cantFinal.toLocaleString('es-CO')} und.</td>
+          <td style="padding: 15px 12px; border: 1px solid #e2e8f0; text-align: right; color: #1D9E75; font-weight: 700;">$${precioFinal.toLocaleString('es-CO')}</td>
+          <td style="padding: 15px 12px; border: 1px solid #e2e8f0; text-align: right; font-weight: 700;">$${(precioFinal * cantFinal).toLocaleString('es-CO')}</td>
         </tr>
       </table>
-      <h3 style="font-size: 14px; color: #1D9E75; margin-bottom: 10px;">CONDICIONES COMERCIALES</h3>
-      <ul style="font-size: 11px; color: #555; line-height: 1.6; padding-left: 20px;">
-        <li><strong>Validez:</strong> Oferta v·lida por 7 dÌas calendario.</li>
-        <li><strong>Pago:</strong> 50% anticipo, 50% contra entrega. (Antes de retenciones).</li>
-        <li><strong>ProducciÛn:</strong> Tolerancia de +/- 10% en cantidad final (Overrun/Underrun).</li>
-        <li><strong>LogÌstica:</strong> EnvÌo gratis en Bogot· sujeto a volumen mÌnimo (NHR). De lo contrario aplica tarifa logÌstica.</li>
-        <li><strong>Bodegaje:</strong> 5 dÌas h·biles libres. DÌa 6 en adelante: $15.000/dÌa por estiba.</li>
-        <li><strong>ImpresiÛn:</strong> Arte vectorizado a cargo del cliente. ClisÈ fÌsico propiedad del cliente.</li>
-      </ul>
+
+      <!-- T√âRMINOS LEGALES Y LOG√çSTICOS -->
+      <h3 style="color: #085041; font-size: 16px; margin-bottom: 10px; border-bottom: 1px solid #cbd5e0; padding-bottom: 5px;">III. POL√çTICAS COMERCIALES Y LOG√çSTICAS</h3>
+      <div style="background: #f7fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 8px;">
+        <ul style="font-size: 12px; color: #4a5568; line-height: 1.6; margin: 0; padding-left: 20px;">
+          <li style="margin-bottom: 6px;"><strong>Forma de pago:</strong> 50% de anticipo para orden de trabajo, 50% saldo contra entrega (Valores cotizados son antes de retenciones de ley).</li>
+          <li style="margin-bottom: 6px;"><strong>Tolerancia de Producci√≥n (Industria Corrugadora):</strong> La cantidad final facturada y entregada tiene un margen de fluctuaci√≥n de +/- 10% por mermas en calibraci√≥n (Overrun/Underrun).</li>
+          <li style="margin-bottom: 6px;"><strong>Bodegaje:</strong> El cliente dispone de cinco (5) d√≠as h√°biles para retirar o recibir la mercanc√≠a. A partir del d√≠a 6 se causar√° un cargo de $15.000 COP diarios por estiba ocupada.</li>
+          <li style="margin-bottom: 6px;"><strong>Despachos:</strong> Env√≠o sin costo en Bogot√° sujeto a cumplimiento de volumen m√≠nimo para ocupaci√≥n de furg√≥n NHR. Pedidos inferiores aplican tarifa de flete a convenir.</li>
+          <li><strong>Pre-Prensa y Clis√©:</strong> El arte gr√°fico debe ser entregado en curvas (Vectorizado). Procesos de re-dibujo por logos pixelados ser√°n facturados adicionalmente. La propiedad del clis√© f√≠sico pertenece al cliente tras su fabricaci√≥n.</li>
+        </ul>
+      </div>
+
+      <div style="margin-top: 50px; text-align: center; font-size: 11px; color: #a0aec0; border-top: 1px solid #e2e8f0; padding-top: 20px;">
+        Cotizaci√≥n generada a trav√©s del m√≥dulo de ingenier√≠a de ECO BOXES PACKAGING SAS.
+      </div>
     </div>`;
-  html2pdf().set({ margin: 0, filename: `Cotizacion_${curL}x${curA}x${curH}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } }).from(element).save();
+
+  html2pdf().set({ 
+    margin: [0, 0, 0, 0], 
+    filename: `ECOBOXES_Cotizacion_${curL}x${curA}x${curH}.pdf`, 
+    image: { type: 'jpeg', quality: 1 }, 
+    html2canvas: { scale: 2, useCORS: true }, 
+    jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } 
+  }).from(element).save();
 }
 
-function copiarWhatsApp() {
-  const texto = `°Hola! AquÌ tienes tu cotizaciÛn:\n\n?? *Especificaciones:*\nï Tipo: Caja Regular\nï Medidas: ${curL}x${curA}x${curH} cm\nï Material: ${selLam.label}\nï Cantidad: ${cantCotizada.toLocaleString('es-CO')} unds.\n\n?? *InversiÛn:*\nï Unitario: $${precioCotizado.toLocaleString('es-CO')} (IVA inc.)\nï Total: $${(precioCotizado * cantCotizada).toLocaleString('es-CO')}\n\n?? *TÈrminos:*\nï Pago 50/50. Validez 7 dÌas.\nï Tolerancia entrega +/- 10%.\nï Bodegaje libre: 5 dÌas.\nï Flete sujeto a volumen.\n\n°Quedamos atentos!`;
-  navigator.clipboard.writeText(texto).then(() => alert("CotizaciÛn copiada para WhatsApp."));
+function copiarWP() {
+  const txt = `*ECO BOXES PACKAGING* üì¶\nPropuesta Comercial\n\nüìå *Ficha T√©cnica*\nCaja Regular RSC (${curL}x${curA}x${curH} cm)\nMaterial: ${selLam.label} (BCT: ${bctCalculado}kg)\nCantidad: ${cantFinal.toLocaleString('es-CO')} unidades.\n\nüí∞ *Inversi√≥n*\nPrecio Unitario: *$${precioFinal.toLocaleString('es-CO')}* (IVA incluido)\nTotal: *$${(precioFinal * cantFinal).toLocaleString('es-CO')}*\n\n_Cotizaci√≥n v√°lida por 7 d√≠as. Pago 50/50. Sujeto a tolerancias de producci√≥n industrial (+/- 10%)._`;
+  navigator.clipboard.writeText(txt).then(() => alert('¬°Texto copiado para enviar por WhatsApp!'));
 }
 </script>
 </body>
