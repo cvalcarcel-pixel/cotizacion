@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cotizador Inteligente - ECOBOXES</title>
+  <!-- Librería para generar PDFs -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; color: #333; margin: 0; padding: 20px; }
+    .container { max-width: 800px; margin: auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    h1 { color: #1D9E75; text-align: center; margin-bottom: 5px; }
+    p.subtitle { text-align: center; color: #666; font-size: 14px; margin-bottom: 25px; }
+    
+    .section { background: #fafafa; border: 1px solid #eaeaea; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+    .section-title { font-size: 16px; font-weight: bold; color: #444; margin-bottom: 15px; border-bottom: 2px solid #1D9E75; display: inline-block; padding-bottom: 3px; }
+    
+    .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 15px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 15px; }
+    
+    label { font-size: 12px; font-weight: bold; color: #555; display: block; margin-bottom: 5px; text-transform: uppercase; }
+    input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+    input:focus, select:focus { outline: none; border-color: #1D9E75; box-shadow: 0 0 5px rgba(29, 158, 117, 0.3); }
+    
+    .btn-calc { background: #1D9E75; color: white; border: none; padding: 15px; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.3s; margin-top: 10px; }
+    .btn-calc:hover { background: #147a5a; }
+    .btn-action { color: white; border: none; padding: 12px; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.3s; }
+    
+    .hidden { display: none; }
+    .best-card { padding: 15px; border: 2px solid #1D9E75; border-radius: 8px; background: #fff; margin-bottom: 15px; }
+    .best-badge { background: #1D9E75; color: white; display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-bottom: 10px; font-weight: bold; }
+    .best-dim { font-size: 18px; font-weight: bold; color: #222; }
+    
+    /* Checkbox styling */
+    .checkbox-group { display: flex; align-items: center; gap: 10px; font-size: 14px; margin-top: 10px; }
+    .checkbox-group input { width: auto; transform: scale(1.2); cursor: pointer; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>ECOBOXES PACKAGING SAS</h1>
+  <p class="subtitle">Motor de Cotización y Generador de Órdenes Técnicas</p>
+
+  <!-- SECCIÓN 1: Diseño de la Caja -->
+  <div class="section" id="sec1">
+    <div class="section-title">1. Dimensiones Internas y Resistencia</div>
+    <div class="grid-4">
+      <div><label>Largo (cm)</label><input type="number" id="largo" placeholder="Ej: 30" onchange="calcLaminas()"></div>
+      <div><label>Ancho (cm)</label><input type="number" id="ancho" placeholder="Ej: 20" onchange="calcLaminas()"></div>
+      <div><label>Alto (cm)</label><input type="number" id="alto" placeholder="Ej: 15" onchange="calcLaminas()"></div>
+      <div><label>Peso a soportar (kg)</label><input type="number" id="peso" placeholder="Ej: 5" value="5" onchange="calcLaminas()"></div>
+    </div>
+    <div class="checkbox-group">
+      <input type="checkbox" id="chk-apila" onchange="calcLaminas()" checked>
+      <label for="chk-apila" style="margin:0;text-transform:none;">La caja se va a apilar (Multiplica exigencia estructural)</label>
+    </div>
+    <div id="dev-info" style="margin-top:15px; font-size:13px; color:#666;"></div>
+  </div>
+
+  <!-- SECCIÓN 2: Optimización de Material -->
+  <div class="section hidden" id="sec2">
+    <div class="section-title">2. Selección Inteligente de Lámina</div>
+    <div id="blk-best"></div>
+  </div>
+
+  <!-- SECCIÓN 3: Configuración Comercial -->
+  <div class="section hidden" id="sec3">
+    <div class="section-title">3. Cantidad y Costos de Producción</div>
+    <div class="grid-2">
+      <div>
+        <label>Cantidad a Cotizar</label>
+        <input type="number" id="cantidad" value="500" onchange="calcCosto()">
+      </div>
+      <div>
+        <label>Margen Estratégico (%)</label>
+        <select id="sl-mg" onchange="calcCosto()">
+          <option value="30">30% (Competitivo)</option>
+          <option value="40" selected>40% (Estándar)</option>
+          <option value="50">50% (Bajo volumen)</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div>
+        <label>Mano de Obra y Máquina ($/caja)</label>
+        <input type="number" id="in-mo" onchange="calcCosto()">
+        <small style="font-size:10px;color:#888;">*Auto-calculado por área, puedes modificarlo.</small>
+      </div>
+    </div>
+
+    <!-- Módulo de Impresión -->
+    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed #ccc;">
+      <div class="checkbox-group">
+        <input type="checkbox" id="chk-imp" onchange="toggleImpresion()">
+        <label for="chk-imp" style="margin:0;">Lleva impresión (Clisé Flexográfico)</label>
+      </div>
+      <div id="blk-imp" class="grid-2 hidden" style="margin-top:10px;">
+        <div><label>Costo Clisé (Proveedor)</label><input type="number" id="in-placa" value="80000" onchange="calcCosto()"></div>
+        <div><label>Cantidad de Tintas</label><input type="number" id="in-tintas" value="1" onchange="calcCosto()"></div>
+      </div>
+    </div>
+    
+    <!-- Inputs ocultos requeridos para descuentos por volumen -->
+    <div class="hidden">
+        <input type="number" id="vd0" value="1000"><input type="number" id="vh0" value="2999"><input type="number" id="vp0" value="3">
+        <input type="number" id="vd1" value="3000"><input type="number" id="vh1" value="99999"><input type="number" id="vp1" value="5">
+        <input type="number" id="vd2" value="0"><input type="number" id="vh2" value="0"><input type="number" id="vp2" value="0">
+    </div>
+  </div>
+
+  <!-- SECCIÓN 4: Resultados y Exportación -->
+  <div class="section hidden" id="sec4">
+    <div class="section-title">4. Resumen y Exportación</div>
+    <div id="res"></div>
+  </div>
+
+</div>
+
+<script>
+/* -----------------------------------------------------------
+   LÓGICA DEL COTIZADOR Y GENERACIÓN PDF
+----------------------------------------------------------- */
+const MATS = [
+  { g: 'micro', label: 'Microcorrugado', maxkg: 3, ect: 300, calibre: 0.0015,
+    lams: [{ d: [70, 111], p: 3150 }, { d: [200, 100], p: 7750 }, { d: [200, 120], p: 9400 }, { d: [200, 140], p: 12150 }] },
+  { g: '620', label: 'Corrugado 620', maxkg: 15, ect: 551, calibre: 0.00416,
+    lams: [{ d: [90, 70 ], p: 3400 }, { d: [89, 90 ], p: 4400 }, { d: [146, 60 ], p: 4350 }, { d: [105, 106], p: 5100 },
+           { d: [146, 90 ], p: 5400 }, { d: [140, 106], p: 6050 }, { d: [120, 119], p: 7000 }, { d: [200, 100], p: 8400 },
+           { d: [106, 106], p: 8800 }, { d: [150, 150], p: 8800 }, { d: [245, 110], p: 9800 }, { d: [200, 120], p: 10400 },
+           { d: [245, 90 ], p: 10600 }, { d: [200, 140], p: 11800 }, { d: [220, 120], p: 12400 }, { d: [230, 150], p: 12600 }, { d: [245, 185], p: 18450 }] },
+  { g: '720', label: 'Corrugado 720 (Reforzado)', maxkg: 25, ect: 700, calibre: 0.0042,
+    lams: [{ d: [245, 185], p: 22300 }] },
+  { g: 'doble', label: 'Doble Pared', maxkg: 50, ect: 1130, calibre: 0.007,
+    lams: [{ d: [91, 91 ], p: 7500 }, { d: [106, 106], p: 10000 }, { d: [245, 111], p: 20450 }, { d: [245, 185], p: 31200 }] }
+];
+
+let selLam = null, curL = 0, curA = 0, curH = 0, precioCotizado = 0, cantCotizada = 0;
+const IVA = 0.19;
+const FACTOR_MERMA = 1.03; 
+
+function toggleImpresion() {
+  document.getElementById('blk-imp').classList.toggle('hidden');
+  calcCosto();
+}
+
+function calcMcKee(ect, cal, l, a) { return Math.round(5.876 * ect * Math.sqrt(cal * (2 * (l + a) / 100))); }
+function getDesarrollo(l, a, h, isDoble) { return { w: Math.round((2 * (l + a) * 10) + (isDoble ? 40 : 35)), h_dev: Math.round((h + a) * 10) + (isDoble ? 15 : 10) }; }
+
+function buildLamList(pesoEf) {
+  const result = [];
+  MATS.forEach(mat => {
+    if (pesoEf > mat.maxkg) return;
+    const isDoble = mat.g === 'doble';
+    const d = getDesarrollo(curL, curA, curH, isDoble);
+    
+    mat.lams.forEach(item => {
+      const wm = item.d[0] * 10, hm = item.d[1] * 10;
+      const cajas = Math.floor(wm / d.w) * Math.floor(hm / d.h_dev); // CERO rotación
+      if (cajas < 1) return;
+      const desp = Math.round((1 - ((cajas * (d.w / 1000) * (d.h_dev / 1000)) / ((wm / 1000) * (hm / 1000)))) * 100);
+      const costoInterno = Math.round((item.p / (1 + IVA)) * 0.90);
+      result.push({ ...mat, w: item.d[0], h: item.d[1], costoInterno, cajas, desp, porcaja: Math.round(costoInterno / cajas), mo: Math.round(150 + ((d.w / 1000) * (d.h_dev / 1000) * 200)) });
+    });
+  });
+  return result;
+}
+
+function calcLaminas() {
+  curL = +document.getElementById('largo').value; curA = +document.getElementById('ancho').value; curH = +document.getElementById('alto').value;
+  if (!curL || !curA || !curH) return;
+  const d = getDesarrollo(curL, curA, curH, false);
+  document.getElementById('dev-info').innerHTML = `Desarrollo de corte: <strong>${d.w} × ${d.h_dev} mm</strong> <br><small style="color:#ba7517">Pestaña y doblez incluidos. Flauta debe ir vertical.</small>`;
+  
+  const allLams = buildLamList(document.getElementById('chk-apila').checked ? (+document.getElementById('peso').value * 4) : +document.getElementById('peso').value);
+  selLam = allLams.sort((a, b) => a.porcaja !== b.porcaja ? a.porcaja - b.porcaja : a.desp - b.desp)[0] || null;
+
+  ['sec2', 'sec3', 'sec4'].forEach(id => document.getElementById(id).classList.remove('hidden'));
+  if(selLam) {
+    document.getElementById('blk-best').innerHTML = `<div class="best-card"><div class="best-badge">Lámina Óptima</div><div class="best-dim">${selLam.w} × ${selLam.h} cm (${selLam.label})</div>
+    <div style="font-size:13px; margin-top:5px; color:#666;">Costo Interno M.P.: $${selLam.costoInterno.toLocaleString('es-CO')} | Salen: <strong>${selLam.cajas} cajas</strong></div></div>`;
+    document.getElementById('in-mo').value = selLam.mo;
+  }
+  calcCosto();
+}
+
+function calcCosto() {
+  if (!selLam) return;
+  cantCotizada = Math.max(300, +document.getElementById('cantidad').value || 300);
+  const mg = +document.getElementById('sl-mg').value / 100;
+  
+  let costoPlacaCaja = 0;
+  if (document.getElementById('chk-imp').checked) {
+      const placaConMargen = (+document.getElementById('in-placa').value || 0) * 1.10;
+      costoPlacaCaja = Math.round((placaConMargen * (+document.getElementById('in-tintas').value || 1)) / cantCotizada);
+  }
+
+  const costoProduccion = selLam.porcaja + (+document.getElementById('in-mo').value || 0) + (selLam.g === 'doble' ? 50 : 30);
+  let pvNeto = Math.round(costoProduccion / (1 - mg));
+  
+  // Descuentos por volumen
+  let dctoVol = 0;
+  for(let i=0; i<3; i++) {
+      if(cantCotizada >= +document.getElementById('vd'+i).value && cantCotizada <= +document.getElementById('vh'+i).value) { dctoVol = +document.getElementById('vp'+i).value; break; }
+  }
+  if(dctoVol > 0) pvNeto = Math.round(pvNeto * (1 - dctoVol / 100));
+
+  precioCotizado = Math.round((pvNeto + costoPlacaCaja) * (1 + IVA));
+
+  document.getElementById('res').innerHTML = `
+    <div style="background:#e6f9f2; border:1px solid #1D9E75; border-radius:8px; padding:20px; text-align:center; margin-bottom:15px;">
+      <div style="font-size:26px; font-weight:bold; color:#1D9E75;">$${precioCotizado.toLocaleString('es-CO')} <span style="font-size:14px;color:#555;font-weight:normal;">/caja (IVA incl.)</span></div>
+      <div style="font-size:15px; color:#333; margin-top:5px; font-weight:bold;">Total Pedido: $${(precioCotizado * cantCotizada).toLocaleString('es-CO')}</div>
+    </div>
+    <div style="background:#fff9e6; color:#856404; padding:12px; border-radius:6px; font-size:13px; margin-bottom:20px; border:1px solid #ffeeba;">
+      <strong>?? TALLER:</strong> Usar ${Math.ceil((cantCotizada / selLam.cajas) * FACTOR_MERMA).toLocaleString('es-CO')} láminas de ${selLam.w}x${selLam.h}cm (Incluye 3% merma).
+    </div>
+    <div style="display:flex; gap:10px;">
+      <button class="btn-action" onclick="generarPDF()" style="background:#E3242B;">?? Generar PDF</button>
+      <button class="btn-action" onclick="copiarWhatsApp()" style="background:#25D366;">?? WhatsApp</button>
+    </div>`;
+}
+
+function generarPDF() {
+  if (!selLam) return;
+  const element = document.createElement('div');
+  element.innerHTML = `
+    <div style="padding: 40px; font-family: Arial, sans-serif; color: #333;">
+      <div style="border-bottom: 2px solid #1D9E75; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: flex-end;">
+        <div><h1 style="color: #1D9E75; margin: 0; font-size: 28px;">ECOBOXES PACKAGING SAS</h1><p style="margin: 5px 0 0 0; font-size: 14px; color: #666;">Bogotá, Colombia</p></div>
+        <div style="text-align: right;"><h2 style="margin: 0; font-size: 20px; color: #444;">COTIZACIÓN COMERCIAL</h2><p style="margin: 5px 0 0 0; font-size: 14px;">Fecha: <strong>${new Date().toLocaleDateString('es-CO')}</strong></p></div>
+      </div>
+      <h3 style="background: #f4f4f4; padding: 10px; border-left: 4px solid #1D9E75; margin-bottom: 20px;">Especificaciones</h3>
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 14px;">
+        <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 8px 0; font-weight: bold;">Tipo de Empaque:</td><td>Caja Regular (RSC)</td></tr>
+        <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 8px 0; font-weight: bold;">Dimensiones Int.:</td><td>${curL} Largo × ${curA} Ancho × ${curH} Alto (cm)</td></tr>
+        <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 8px 0; font-weight: bold;">Material:</td><td>${selLam.label}</td></tr>
+        <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 8px 0; font-weight: bold;">Resistencia (BCT):</td><td>${calcMcKee(selLam.ect, selLam.calibre, curL, curA).toLocaleString('es-CO')} kg aprox.</td></tr>
+      </table>
+      <table style="width: 100%; border-collapse: collapse; font-size: 16px; margin-bottom: 40px;">
+        <tr style="background: #1D9E75; color: white;">
+          <th style="padding: 10px; text-align: left;">Descripción</th><th style="padding: 10px; text-align: center;">Cant.</th><th style="padding: 10px; text-align: right;">V. Unit. (IVA inc)</th><th style="padding: 10px; text-align: right;">Total (IVA inc)</th>
+        </tr>
+        <tr>
+          <td style="padding: 15px 10px; border-bottom: 1px solid #ddd;">Cajas Corrugadas</td>
+          <td style="padding: 15px 10px; border-bottom: 1px solid #ddd; text-align: center;">${cantCotizada.toLocaleString('es-CO')}</td>
+          <td style="padding: 15px 10px; border-bottom: 1px solid #ddd; text-align: right;">$${precioCotizado.toLocaleString('es-CO')}</td>
+          <td style="padding: 15px 10px; border-bottom: 1px solid #ddd; text-align: right; font-weight: bold;">$${(precioCotizado * cantCotizada).toLocaleString('es-CO')}</td>
+        </tr>
+      </table>
+      <h3 style="font-size: 14px; color: #1D9E75; margin-bottom: 10px;">CONDICIONES COMERCIALES</h3>
+      <ul style="font-size: 11px; color: #555; line-height: 1.6; padding-left: 20px;">
+        <li><strong>Validez:</strong> Oferta válida por 7 días calendario.</li>
+        <li><strong>Pago:</strong> 50% anticipo, 50% contra entrega. (Antes de retenciones).</li>
+        <li><strong>Producción:</strong> Tolerancia de +/- 10% en cantidad final (Overrun/Underrun).</li>
+        <li><strong>Logística:</strong> Envío gratis en Bogotá sujeto a volumen mínimo (NHR). De lo contrario aplica tarifa logística.</li>
+        <li><strong>Bodegaje:</strong> 5 días hábiles libres. Día 6 en adelante: $15.000/día por estiba.</li>
+        <li><strong>Impresión:</strong> Arte vectorizado a cargo del cliente. Clisé físico propiedad del cliente.</li>
+      </ul>
+    </div>`;
+  html2pdf().set({ margin: 0, filename: `Cotizacion_${curL}x${curA}x${curH}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } }).from(element).save();
+}
+
+function copiarWhatsApp() {
+  const texto = `¡Hola! Aquí tienes tu cotización:\n\n?? *Especificaciones:*\n• Tipo: Caja Regular\n• Medidas: ${curL}x${curA}x${curH} cm\n• Material: ${selLam.label}\n• Cantidad: ${cantCotizada.toLocaleString('es-CO')} unds.\n\n?? *Inversión:*\n• Unitario: $${precioCotizado.toLocaleString('es-CO')} (IVA inc.)\n• Total: $${(precioCotizado * cantCotizada).toLocaleString('es-CO')}\n\n?? *Términos:*\n• Pago 50/50. Validez 7 días.\n• Tolerancia entrega +/- 10%.\n• Bodegaje libre: 5 días.\n• Flete sujeto a volumen.\n\n¡Quedamos atentos!`;
+  navigator.clipboard.writeText(texto).then(() => alert("Cotización copiada para WhatsApp."));
+}
+</script>
+</body>
+</html>
